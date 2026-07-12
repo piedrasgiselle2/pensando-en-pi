@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#020814">
+<title>Pensando en π</title>
+<style>
+:root{
+  --bg:#020814;
+  --panel:#071a32;
+  --panel2:#0b2748;
+  --cyan:#8be9ff;
+  --blue:#2da8ff;
+  --silver:#e8eef5;
+  --muted:#a9bfd2;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  color:#fff;
+  background:
+    radial-gradient(circle at 15% 10%,rgba(45,168,255,.18),transparent 30%),
+    radial-gradient(circle at 85% 20%,rgba(139,233,255,.1),transparent 26%),
+    linear-gradient(180deg,#06162b,#020814 55%);
+}
+header{
+  position:sticky;top:0;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;
+  background:rgba(2,8,20,.88);
+  border-bottom:1px solid rgba(139,233,255,.16);
+  backdrop-filter:blur(12px);
+}
+.brand{display:flex;align-items:center;gap:10px}
+.pi{font-family:Georgia,serif;font-size:34px;color:var(--cyan)}
+.brand b{display:block}
+.brand small{color:var(--muted)}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+nav a{
+  color:#fff;text-decoration:none;font-size:13px;
+  border:1px solid rgba(139,233,255,.2);
+  padding:7px 10px;border-radius:999px;
+}
+main{max-width:1050px;margin:auto;padding:20px}
+section{
+  min-height:88vh;
+  display:flex;align-items:center;
+  padding:36px 0;
+}
+.card{
+  width:100%;
+  background:linear-gradient(180deg,rgba(11,39,72,.88),rgba(4,15,31,.92));
+  border:1px solid rgba(139,233,255,.22);
+  border-radius:28px;
+  padding:28px;
+  box-shadow:0 20px 70px rgba(0,0,0,.38);
+}
+.hero{text-align:center}
+.hero h1{
+  font-size:clamp(44px,9vw,90px);
+  margin:0;
+}
+.hero h1 span{color:var(--cyan);font-family:Georgia,serif}
+.hero p{
+  font-size:clamp(19px,3vw,30px);
+  max-width:720px;margin:18px auto;
+}
+.muted{color:var(--muted);line-height:1.55}
+.btnrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+button,.btn{
+  border:0;border-radius:15px;padding:13px 17px;
+  font-weight:700;font-size:16px;cursor:pointer;
+}
+.primary{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#02111e}
+.secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.14)}
+.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){
+  nav{display:none}
+  .grid,.grid2{grid-template-columns:1fr}
+  section{min-height:auto}
+}
+h2{font-size:clamp(30px,5vw,48px);margin:0 0 12px;color:var(--cyan)}
+h3{color:var(--cyan)}
+canvas{
+  width:100%;height:auto;display:block;
+  border-radius:18px;
+  background:radial-gradient(circle at center,#10365e,#020814);
+  border:1px solid rgba(139,233,255,.18);
+}
+.stat{
+  font-size:50px;font-weight:900;color:var(--cyan);
+  letter-spacing:-2px;
+}
+.freqgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.infobox{
+  margin-top:14px;padding:14px;border-radius:15px;
+  background:rgba(45,168,255,.08);
+  border:1px solid rgba(45,168,255,.17);
+  line-height:1.5;
+}
+.person{
+  min-height:330px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border-radius:20px;
+  background:
+    radial-gradient(circle,rgba(139,233,255,.18),transparent 45%),
+    linear-gradient(180deg,#123b66,#071a32);
+  padding:18px;
+  overflow:hidden;
+}
+.person img{
+  width:min(100%,300px);aspect-ratio:4/5;object-fit:cover;
+  border-radius:18px;border:2px solid rgba(139,233,255,.45);
+  filter:grayscale(1) contrast(1.08) sepia(.12) hue-rotate(155deg) saturate(.9);
+  box-shadow:0 18px 45px rgba(0,0,0,.35);
+}
+.person figcaption{margin-top:12px;text-align:center;color:var(--muted);font-size:14px}
+.alias-card{
+  margin:16px 0;padding:18px;border-radius:18px;
+  background:linear-gradient(135deg,rgba(139,233,255,.12),rgba(45,168,255,.05));
+  border:1px solid rgba(139,233,255,.25);
+}
+.alias-name{
+  display:inline-block;font-family:Georgia,serif;font-size:clamp(28px,5vw,46px);
+  color:var(--cyan);letter-spacing:1px;position:relative;
+  animation:aliasPulse 3.2s ease-in-out infinite;
+}
+.alias-name::after{
+  content:"Sophie Germain";position:absolute;left:0;top:0;color:#fff;
+  opacity:0;animation:revealName 6.4s ease-in-out infinite;
+}
+@keyframes aliasPulse{0%,44%,100%{opacity:1}50%,94%{opacity:.08}}
+@keyframes revealName{0%,44%,100%{opacity:0}50%,94%{opacity:1}}
+.why-box{
+  margin-top:18px;padding:18px;border-radius:18px;
+  background:rgba(232,238,245,.06);border-left:4px solid var(--cyan);
+}
+.credit{font-size:12px;color:var(--muted);margin-top:8px}
+.timeline{
+  border-left:3px solid var(--cyan);
+  padding-left:18px;
+}
+.timeline p{margin:10px 0 22px}
+.quote{
+  font-size:clamp(24px,4vw,42px);
+  font-weight:800;
+  text-align:center;
+  max-width:820px;
+  margin:20px auto;
+}
+.interval-card{
+  text-align:left;padding:20px;border-radius:20px;
+  background:linear-gradient(180deg,rgba(15,55,98,.8),rgba(5,18,35,.95));
+  border:1px solid rgba(139,233,255,.2);
+  color:white;
+}
+.interval-card strong{font-size:25px;color:var(--cyan);display:block}
+.ratio{font-size:40px;font-weight:900;margin:8px 0}
+.footer{
+  text-align:center;color:var(--muted);padding:30px 16px 40px
+}
+.badge{
+  display:inline-block;padding:8px 12px;border-radius:999px;
+  border:1px solid rgba(139,233,255,.25);
+  color:var(--cyan);margin-bottom:12px
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="pi">π</div>
+    <div><b>Pensando en π</b><small>Matemática · ondas · música</small></div>
+  </div>
+  <nav>
+    <a href="#ondas">Ondas</a>
+    <a href="#pitagoras">Pitágoras</a>
+    <a href="#chladni">Chladni</a>
+    <a href="#sophie">Sophie Germain</a>
+    <a href="#intervalos">Intervalos</a>
+  </nav>
+</header>
+
+<main>
+
+<section id="inicio">
+  <div class="card hero">
+    <div class="badge">Experiencia interactiva</div>
+    <h1>Pensando en <span>π</span></h1>
+    <p>¿Sabías que una función puede convertirse en música?</p>
+    <div class="muted">
+      Explorá ondas, frecuencias, figuras de Chladni, consonancias, disonancias
+      y los aportes de Pitágoras y Sophie Germain.
+    </div>
+    <div class="btnrow">
+      <a class="btn primary" href="#ondas">Comenzar</a>
+    </div>
+  </div>
+</section>
+
+<section id="ondas">
+  <div class="card">
+    <h2>Una función que se puede escuchar</h2>
+    <p class="muted">La onda cambia cuando modificás su frecuencia.</p>
+    <div class="grid">
+      <canvas id="wave" width="900" height="470"></canvas>
+      <div>
+        <div class="stat" id="freqLabel">440 Hz</div>
+        <p class="muted" id="freqInfo">Nota La: frecuencia de referencia musical.</p>
+        <div class="freqgrid">
+          <button class="secondary" onclick="setFreq(220)">220 Hz</button>
+          <button class="primary" onclick="setFreq(440)">440 Hz</button>
+          <button class="secondary" onclick="setFreq(660)">660 Hz</button>
+          <button class="secondary" onclick="setFreq(880)">880 Hz</button>
+        </div>
+        <div class="btnrow">
+          <button class="secondary" onclick="toggleTone()">🔊 Escuchar / detener</button>
+        </div>
+        <div class="infobox">
+          <b>Mayor frecuencia</b> → sonido más agudo.<br>
+          <b>Menor frecuencia</b> → sonido más grave.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pitagoras">
+  <div class="card">
+    <h2>Pitágoras y la música</h2>
+    <div class="grid2">
+      <div>
+        <h3>La idea central</h3>
+        <p class="muted">
+          Pitágoras relacionó sonidos agradables con proporciones simples entre
+          longitudes de cuerdas. Por ejemplo, una relación 2:1 produce una octava
+          y una relación 3:2 produce una quinta justa.
+        </p>
+        <div class="infobox">
+          Estas proporciones muestran que la música también puede estudiarse
+          mediante números, razones y funciones.
+        </div>
+      </div>
+      <div>
+        <canvas id="strings" width="800" height="420"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="chladni">
+  <div class="card">
+    <h2>Las vibraciones también crean formas</h2>
+    <p class="muted">
+      Estas imágenes están inspiradas en las figuras de Chladni.
+    </p>
+    <div class="grid">
+      <canvas id="chladniCanvas" width="900" height="700"></canvas>
+      <div>
+        <div class="stat" style="font-size:38px" id="chladniLabel">Frecuencia media</div>
+        <p class="muted">
+          En una placa real, la arena se acumula sobre las líneas nodales,
+          donde la placa casi no se mueve.
+        </p>
+        <div class="freqgrid">
+          <button class="secondary" onclick="setChladni(2,3,'Frecuencia baja')">Frecuencia baja</button>
+          <button class="primary" onclick="setChladni(3,5,'Frecuencia media')">Frecuencia media</button>
+          <button class="secondary" onclick="setChladni(4,7,'Frecuencia alta')">Frecuencia alta</button>
+          <button class="secondary" onclick="setChladni(5,8,'Frecuencia muy alta')">Frecuencia muy alta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sophie">
+  <div class="card">
+    <h2>Sophie Germain</h2>
+    <p class="muted">Matemática, pionera en el estudio de las vibraciones y ejemplo de perseverancia frente a las barreras de su época.</p>
+    <div class="grid">
+      <figure class="person">
+        <img src="sophie-germain.jpg" alt="Retrato de Sophie Germain">
+        <figcaption>Sophie Germain (1776–1831)</figcaption>
+      </figure>
+      <div>
+        <h3>Una identidad que tuvo que ocultar</h3>
+        <p class="muted">
+          A fines del siglo XVIII, las mujeres no podían ingresar como alumnas a la École Polytechnique de París. Sophie consiguió apuntes de las clases y envió sus trabajos usando el seudónimo masculino:
+        </p>
+        <div class="alias-card">
+          <div class="alias-name">Monsieur LeBlanc</div>
+          <p class="muted" style="margin-bottom:0">
+            Firmar con ese nombre permitió que sus ideas fueran evaluadas sin que su género provocara un rechazo inmediato. Cuando Joseph-Louis Lagrange descubrió quién era, reconoció su talento y la alentó a continuar.
+          </p>
+        </div>
+        <p class="muted">
+          También escribió a Carl Friedrich Gauss con ese seudónimo para compartir sus investigaciones sobre teoría de números. Su historia muestra que el acceso al conocimiento no fue igual para todas las personas y que muchas mujeres tuvieron que superar obstáculos adicionales para participar en la ciencia.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:20px">
+      <div class="timeline">
+        <p><b>1776:</b> nace en París.</p>
+        <p><b>Como “Monsieur LeBlanc”:</b> estudia y presenta trabajos matemáticos pese a no poder asistir oficialmente a las clases.</p>
+        <p><b>Vibraciones:</b> investiga la elasticidad de las placas y desarrolla un modelo matemático para describir su movimiento.</p>
+      </div>
+      <div class="why-box">
+        <h3>¿Por qué está en “Pensando en π”?</h3>
+        <p class="muted">
+          Nuestro proyecto estudia ondas, frecuencia, sonido y figuras de Chladni. Sophie Germain es fundamental porque ayudó a construir la explicación matemática de cómo vibran las placas y por qué aparecen esos patrones.
+        </p>
+        <p class="muted" style="margin-bottom:0">
+          Incluirla también permite mostrar que la historia de la matemática tuvo mujeres brillantes cuyos aportes muchas veces fueron invisibilizados o condicionados por prejuicios.
+        </p>
+      </div>
+    </div>
+
+    <div class="infobox" style="margin-top:20px;text-align:center;font-size:20px">
+      <b>La ciencia avanza cuando las ideas pueden ser escuchadas sin prejuicios.</b>
+    </div>
+    <div class="credit">Retrato de dominio público: Wikimedia Commons.</div>
+  </div>
+</section>
+
+<section id="intervalos">
+  <div class="card">
+    <h2>Consonancias y disonancias</h2>
+    <p class="muted">Probá dos relaciones entre frecuencias.</p>
+    <div class="grid2">
+      <button class="interval-card" onclick="playInterval('fifth')">
+        <strong>Consonancia</strong>
+        <div class="ratio">3 : 2</div>
+        Quinta justa: 440 Hz y 660 Hz.
+      </button>
+      <button class="interval-card" onclick="playInterval('tritone')">
+        <strong>Disonancia</strong>
+        <div class="ratio">√2 : 1</div>
+        Tritono temperado: 440 Hz y aproximadamente 622 Hz.
+      </button>
+    </div>
+    <div style="margin-top:18px">
+      <canvas id="intervalCanvas" width="900" height="400"></canvas>
+    </div>
+    <p class="muted" id="intervalText">
+      Tocá una opción para escuchar y comparar las ondas.
+    </p>
+  </div>
+</section>
+
+<section id="cierre">
+  <div class="card hero">
+    <h2>Pensando en π</h2>
+    <div class="quote">
+      La matemática también puede verse, escucharse y sentirse.
+    </div>
+    <p class="muted">
+      Funciones trigonométricas, fenómenos periódicos, música y vibraciones.
+    </p>
+    <div class="badge">@proyecto.pensandoenpi</div>
+    <div class="btnrow">
+      <a class="btn primary" href="#inicio">Volver al inicio</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="footer">Proyecto de feria de ciencias · Pensando en π</div>
+
+<script>
+let frequency = 440;
+let phase = 0;
+let waveFrame;
+let audioCtx = null;
+let osc = null;
+let gain = null;
+let toneOn = false;
+
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === "suspended") audioCtx.resume();
+}
+function startTone(freq){
+  ensureAudio();
+  stopTone();
+  osc = audioCtx.createOscillator();
+  gain = audioCtx.createGain();
+  osc.type = "sine";
+  osc.frequency.value = freq;
+  gain.gain.value = 0.0001;
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start();
+  gain.gain.exponentialRampToValueAtTime(0.09, audioCtx.currentTime + 0.05);
+  toneOn = true;
+}
+function stopTone(){
+  if(osc && gain && audioCtx){
+    try{
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08);
+      osc.stop(audioCtx.currentTime + 0.1);
+    }catch(e){}
+  }
+  osc = null; gain = null; toneOn = false;
+}
+function toggleTone(){ toneOn ? stopTone() : startTone(frequency); }
+
+function setFreq(f){
+  frequency = f;
+  document.getElementById("freqLabel").textContent = f + " Hz";
+  const texts = {
+    220:"Una nota grave: La3.",
+    440:"Nota La: frecuencia de referencia musical.",
+    660:"Una frecuencia más aguda, relacionada con una quinta justa.",
+    880:"Una octava por encima de 440 Hz."
+  };
+  document.getElementById("freqInfo").textContent = texts[f];
+  if(toneOn) startTone(f);
+}
+
+function drawWave(){
+  const c = document.getElementById("wave");
+  const ctx = c.getContext("2d");
+  cancelAnimationFrame(waveFrame);
+  function frame(){
+    const w=c.width,h=c.height;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle="rgba(255,255,255,.1)";
+    ctx.lineWidth=1;
+    for(let x=0;x<w;x+=75){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
+    for(let y=0;y<h;y+=70){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+    ctx.strokeStyle="#8be9ff";
+    ctx.lineWidth=8;
+    ctx.beginPath();
+    const cycles=frequency/110;
+    for(let x=0;x<=w;x++){
+      const y=h/2 + Math.sin((x/w)*Math.PI*2*cycles+phase)*h*.25;
+      if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.fillStyle="#e8eef5";
+    ctx.font="bold 28px Arial";
+    ctx.fillText("y = sen(2πft)",30,45);
+    phase += .05;
+    waveFrame=requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function drawStrings(){
+  const c=document.getElementById("strings"),ctx=c.getContext("2d"),w=c.width,h=c.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle="#e8eef5";ctx.font="bold 28px Arial";
+  ctx.fillText("Relaciones entre longitudes",30,45);
+  const rows=[
+    {y:120,len:650,label:"1 : 1"},
+    {y:220,len:325,label:"2 : 1"},
+    {y:320,len:433,label:"3 : 2"}
+  ];
+  rows.forEach(r=>{
+    ctx.strokeStyle="#8be9ff";ctx.lineWidth=8;
+    ctx.beginPath();ctx.moveTo(70,r.y);ctx.lineTo(70+r.len,r.y);ctx.stroke();
+    ctx.fillStyle="#fff";ctx.font="bold 24px Arial";
+    ctx.fillText(r.label,70+r.len+20,r.y+8);
+  });
+}
+
+function drawChladni(m,n,label){
+  const c=document.getElementById("chladniCanvas"),ctx=c.getContext("2d");
+  const w=c.width,h=c.height,img=ctx.createImageData(w,h);
+  let p=0;
+  for(let y=0;y<h;y++){
+    const yy=(y/h)*Math.PI;
+    for(let x=0;x<w;x++){
+      const xx=(x/w)*Math.PI;
+      const z=Math.cos(m*xx)*Math.cos(n*yy)-Math.cos(n*xx)*Math.cos(m*yy);
+      const nodal=Math.exp(-Math.abs(z)*23);
+      img.data[p++]=Math.round(7+90*nodal);
+      img.data[p++]=Math.round(20+190*nodal);
+      img.data[p++]=Math.round(38+215*nodal);
+      img.data[p++]=255;
+    }
+  }
+  ctx.putImageData(img,0,0);
+  document.getElementById("chladniLabel").textContent=label;
+}
+function setChladni(m,n,label){drawChladni(m,n,label)}
+
+function playInterval(type){
+  ensureAudio();
+  stopTone();
+  const freqs = type==="fifth" ? [440,660] : [440,440*Math.SQRT2];
+  const master=audioCtx.createGain();
+  master.gain.value=.06;
+  master.connect(audioCtx.destination);
+  freqs.forEach(f=>{
+    const o=audioCtx.createOscillator();
+    o.type="sine";o.frequency.value=f;o.connect(master);o.start();o.stop(audioCtx.currentTime+1.7);
+  });
+  document.getElementById("intervalText").textContent =
+    type==="fifth"
+    ? "Quinta justa: 440 Hz y 660 Hz. Relación 3:2."
+    : "Tritono temperado: 440 Hz y aproximadamente 622 Hz.";
+  drawInterval(freqs);
+}
+function drawInterval(freqs=[440,660]){
+  const c=document.getElementById("intervalCanvas"),ctx=c.getContext("2d"),w=c.width,h=c.height;
+  ctx.clearRect(0,0,w,h);
+  ["#8be9ff","#e8eef5"].forEach((color,j)=>{
+    const f=freqs[j];
+    ctx.strokeStyle=color;ctx.lineWidth=5;ctx.beginPath();
+    for(let x=0;x<=w;x++){
+      const cycles=f/110;
+      const y=h*(.34+.34*j)+Math.sin((x/w)*Math.PI*2*cycles)*52;
+      if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  });
+}
+
+drawWave();
+drawStrings();
+drawChladni(3,5,"Frecuencia media");
+drawInterval();
+</script>
+</body>
+</html>
