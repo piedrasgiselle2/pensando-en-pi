@@ -1,0 +1,56 @@
+PENSANDO EN π — PÁGINA INTERACTIVA
+==================================
+
+QUÉ INCLUYE
+-----------
+- Pantalla inicial del proyecto.
+- Activación opcional de la cámara del celular.
+- Onda senoidal animada.
+- Frecuencias de 220, 440, 660 y 880 Hz.
+- Sonido generado directamente en el navegador.
+- Visualización inspirada en figuras de Chladni.
+- Comparación entre consonancia y disonancia.
+- Pantalla final con Instagram y QR automático.
+
+CÓMO PROBARLA
+-------------
+1. Abrí index.html en una computadora.
+2. La parte interactiva funciona inmediatamente.
+3. La cámara puede no funcionar si se abre como archivo local; para usarla,
+   hay que publicar la página con HTTPS.
+
+CÓMO PUBLICARLA GRATIS EN GITHUB PAGES
+--------------------------------------
+1. Entrá en github.com y creá una cuenta.
+2. Tocá "New repository".
+3. Poné un nombre, por ejemplo: pensando-en-pi.
+4. Elegí "Public" y creá el repositorio.
+5. Entrá al repositorio y elegí "Add file" > "Upload files".
+6. Subí index.html.
+7. Confirmá con "Commit changes".
+8. Entrá en "Settings" > "Pages".
+9. En "Build and deployment", elegí:
+   - Source: Deploy from a branch
+   - Branch: main
+   - Folder: /root
+10. Guardá.
+11. GitHub mostrará el enlace público de la página.
+12. Abrí ese enlace desde el celular y permití la cámara.
+
+CÓMO USAR EL QR
+---------------
+La última pantalla genera un QR con la dirección de la página.
+Una vez publicada, abrí la página desde su enlace definitivo y sacá una captura
+del QR o imprimí directamente la pantalla.
+
+CAMBIAR EL INSTAGRAM
+--------------------
+Buscá en index.html:
+@proyecto.pensandoenpi
+
+y reemplazalo por el usuario definitivo.
+
+ACLARACIÓN
+----------
+Esta versión usa la cámara como fondo y coloca la experiencia visual encima.
+No necesita una aplicación ni reconocer una tarjeta específica.
