@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#020812" />
+  <title>Pensando en π</title>
+
+  <style>
+    :root{
+      --bg:#020812;
+      --panel:rgba(4,16,33,.82);
+      --panel-soft:rgba(8,35,67,.72);
+      --cyan:#8be9ff;
+      --blue:#2aa8ff;
+      --silver:#e7eef7;
+      --muted:#a9bfd2;
+      --line:rgba(139,233,255,.34);
+      --shadow:0 18px 70px rgba(0,0,0,.45);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,Arial,sans-serif;background:var(--bg);color:white;overflow-x:hidden}
+
+    body::before{
+      content:"";
+      position:fixed;inset:0;z-index:-3;
+      background:
+        radial-gradient(circle at 15% 10%,rgba(42,168,255,.20),transparent 32%),
+        radial-gradient(circle at 85% 15%,rgba(139,233,255,.10),transparent 28%),
+        linear-gradient(180deg,#06152a 0%,#020812 65%);
+    }
+
+    #camera{
+      position:fixed;inset:0;width:100%;height:100%;object-fit:cover;
+      opacity:.24;filter:saturate(.8) contrast(1.05);
+      z-index:-2;display:none;
+    }
+
+    .scan-lines{
+      position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.14;
+      background:repeating-linear-gradient(180deg,transparent 0 4px,rgba(255,255,255,.06) 5px);
+      display:none;
+    }
+
+    .app{min-height:100vh;display:flex;flex-direction:column}
+    header{
+      position:sticky;top:0;z-index:10;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08);
+      background:rgba(2,8,18,.72);backdrop-filter:blur(15px);
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-pi{font-family:Georgia,serif;font-size:34px;color:var(--cyan);line-height:1}
+    .brand-title{font-weight:800;letter-spacing:.3px}
+    .brand-sub{font-size:12px;color:var(--muted)}
+    .status{
+      padding:8px 12px;border-radius:999px;border:1px solid var(--line);
+      color:var(--cyan);font-size:12px;background:rgba(8,35,67,.45)
+    }
+
+    main{width:min(100%,980px);margin:auto;padding:22px 16px 38px}
+    .screen{display:none;animation:fade .5s ease}
+    .screen.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    .hero{
+      min-height:calc(100vh - 120px);
+      display:grid;place-items:center;text-align:center
+    }
+    .hero-card{
+      width:min(100%,650px);padding:38px 24px;border-radius:30px;
+      background:linear-gradient(180deg,rgba(7,31,60,.88),rgba(2,10,22,.88));
+      border:1px solid rgba(139,233,255,.26);box-shadow:var(--shadow);
+      position:relative;overflow:hidden
+    }
+    .hero-card::before{
+      content:"π";position:absolute;right:-10px;top:-60px;
+      font-family:Georgia,serif;font-size:250px;color:rgba(139,233,255,.06)
+    }
+    .hero h1{font-size:clamp(42px,10vw,84px);margin:0 0 8px}
+    .hero h1 span{color:var(--cyan);font-family:Georgia,serif}
+    .lead{font-size:clamp(20px,4vw,30px);margin:16px auto;max-width:560px;line-height:1.25}
+    .muted{color:var(--muted);line-height:1.5}
+
+    .btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:24px}
+    button{
+      border:0;border-radius:16px;padding:14px 18px;font-size:16px;font-weight:800;
+      cursor:pointer;transition:.2s transform,.2s opacity;
+    }
+    button:active{transform:scale(.98)}
+    .primary{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#02111d}
+    .secondary{background:rgba(255,255,255,.08);color:white;border:1px solid rgba(255,255,255,.14)}
+    .ghost{background:transparent;color:var(--cyan);border:1px solid var(--line)}
+
+    .panel{
+      border:1px solid rgba(139,233,255,.22);
+      background:var(--panel);border-radius:24px;padding:18px;
+      box-shadow:var(--shadow);backdrop-filter:blur(10px)
+    }
+    .grid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}}
+
+    .section-title{margin:0 0 5px;font-size:28px}
+    .section-sub{margin:0 0 18px;color:var(--muted)}
+
+    canvas{
+      display:block;width:100%;height:auto;border-radius:18px;
+      background:radial-gradient(circle at center,rgba(15,54,93,.66),rgba(1,8,18,.93));
+      border:1px solid rgba(139,233,255,.18)
+    }
+
+    .frequency{
+      font-size:48px;font-weight:900;color:var(--cyan);letter-spacing:-2px
+    }
+    .unit{font-size:18px;color:var(--muted)}
+    .freq-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px}
+    .info-box{
+      margin-top:14px;padding:14px;border-radius:16px;
+      background:rgba(42,168,255,.08);border:1px solid rgba(42,168,255,.16);
+      line-height:1.45
+    }
+
+    .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media(max-width:620px){.choice-grid{grid-template-columns:1fr}}
+    .choice{
+      text-align:left;min-height:180px;padding:20px;border-radius:22px;
+      border:1px solid rgba(139,233,255,.20);
+      background:linear-gradient(180deg,rgba(10,45,83,.74),rgba(4,14,28,.88));
+      color:white
+    }
+    .choice strong{display:block;font-size:24px;margin-bottom:8px;color:var(--cyan)}
+    .ratio{font-size:36px;font-weight:900;margin:8px 0}
+    .small{font-size:13px;color:var(--muted);line-height:1.45}
+
+    .footer-nav{
+      display:flex;justify-content:space-between;gap:12px;margin-top:18px
+    }
+
+    .final{text-align:center;padding:30px 18px}
+    .final .logo{font-size:70px;font-weight:900;margin:0}
+    .final .logo span{font-family:Georgia,serif;color:var(--cyan)}
+    .quote{font-size:clamp(24px,5vw,42px);font-weight:800;max-width:760px;margin:20px auto}
+    .social{display:inline-block;padding:12px 18px;border-radius:999px;border:1px solid var(--line);color:var(--cyan)}
+    #qr{margin:18px auto 0;width:170px;min-height:170px;padding:10px;background:white;border-radius:16px;display:grid;place-items:center}
+    #qr img,#qr canvas{max-width:100%}
+
+    .progress{display:flex;gap:6px;justify-content:center;margin:12px 0 18px}
+    .dot{width:30px;height:5px;border-radius:99px;background:rgba(255,255,255,.12)}
+    .dot.on{background:var(--cyan)}
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <video id="camera" autoplay playsinline muted></video>
+  <div class="scan-lines" id="scanLines"></div>
+
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="brand-pi">π</div>
+        <div>
+          <div class="brand-title">Pensando en π</div>
+          <div class="brand-sub">Matemática · ondas · música</div>
+        </div>
+      </div>
+      <div class="status" id="status">Experiencia lista</div>
+    </header>
+
+    <main>
+      <div class="progress" id="progress"></div>
+
+      <section class="screen active hero" data-screen="0">
+        <div class="hero-card">
+          <h1>Pensando en <span>π</span></h1>
+          <div class="lead">¿Sabías que una función puede convertirse en música?</div>
+          <p class="muted">
+            Activá la experiencia para ver una onda, escuchar su frecuencia y descubrir
+            cómo las vibraciones crean formas.
+          </p>
+          <div class="btns">
+            <button class="primary" onclick="startExperience()">▶ Comenzar</button>
+            <button class="secondary" onclick="nextScreen()">Ver sin cámara</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="1">
+        <h2 class="section-title">Una función que se puede escuchar</h2>
+        <p class="section-sub">La onda cambia cuando modificás su frecuencia.</p>
+
+        <div class="grid">
+          <div class="panel">
+            <canvas id="waveCanvas" width="900" height="460"></canvas>
+          </div>
+
+          <div class="panel">
+            <div class="frequency" id="freqValue">440 <span class="unit">Hz</span></div>
+            <p class="muted" id="freqText">Nota La. Frecuencia de referencia musical.</p>
+
+            <div class="freq-buttons">
+              <button class="secondary" onclick="setFrequency(220)">220 Hz</button>
+              <button class="primary" onclick="setFrequency(440)">440 Hz</button>
+              <button class="secondary" onclick="setFrequency(660)">660 Hz</button>
+              <button class="secondary" onclick="setFrequency(880)">880 Hz</button>
+            </div>
+
+            <div class="btns">
+              <button class="ghost" onclick="toggleTone()">🔊 Escuchar / detener</button>
+            </div>
+
+            <div class="info-box">
+              <strong>Mayor frecuencia</strong> → sonido más agudo.<br>
+              <strong>Menor frecuencia</strong> → sonido más grave.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-nav">
+          <button class="secondary" onclick="prevScreen()">Atrás</button>
+          <button class="primary" onclick="nextScreen()">Ver figura de Chladni</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="2">
+        <h2 class="section-title">Las vibraciones también crean formas</h2>
+        <p class="section-sub">
+          Esta visualización recrea patrones inspirados en las figuras de Chladni.
+        </p>
+
+        <div class="grid">
+          <div class="panel">
+            <canvas id="chladniCanvas" width="900" height="700"></canvas>
+          </div>
+          <div class="panel">
+            <div class="frequency" id="modeValue">Modo 3 × 5</div>
+            <p class="muted">
+              Al cambiar los modos de vibración, aparecen nuevas líneas nodales:
+              zonas donde la placa casi no se mueve.
+            </p>
+            <div class="freq-buttons">
+              <button class="secondary" onclick="setChladni(2,3)">2 × 3</button>
+              <button class="primary" onclick="setChladni(3,5)">3 × 5</button>
+              <button class="secondary" onclick="setChladni(4,7)">4 × 7</button>
+              <button class="secondary" onclick="setChladni(5,8)">5 × 8</button>
+            </div>
+            <div class="info-box">
+              En una placa real, la arena se acumula sobre las líneas nodales y revela
+              el patrón de vibración.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-nav">
+          <button class="secondary" onclick="prevScreen()">Atrás</button>
+          <button class="primary" onclick="nextScreen()">Consonancia y disonancia</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="3">
+        <h2 class="section-title">¿Por qué algunos sonidos combinan mejor?</h2>
+        <p class="section-sub">Probá dos relaciones entre frecuencias.</p>
+
+        <div class="choice-grid">
+          <button class="choice" onclick="playInterval('fifth')">
+            <strong>Consonancia</strong>
+            <div class="ratio">3 : 2</div>
+            Quinta justa: 440 Hz y 660 Hz. Sus ondas presentan una relación sencilla.
+          </button>
+
+          <button class="choice" onclick="playInterval('tritone')">
+            <strong>Disonancia</strong>
+            <div class="ratio">√2 : 1</div>
+            Tritono temperado: una relación más compleja entre las frecuencias.
+          </button>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <canvas id="intervalCanvas" width="900" height="390"></canvas>
+          <p class="small" id="intervalText">
+            Tocá una opción para escuchar y comparar las ondas.
+          </p>
+        </div>
+
+        <div class="footer-nav">
+          <button class="secondary" onclick="prevScreen()">Atrás</button>
+          <button class="primary" onclick="nextScreen()">Finalizar</button>
+        </div>
+      </section>
+
+      <section class="screen final" data-screen="4">
+        <p class="logo">Pensando en <span>π</span></p>
+        <div class="quote">La matemática también puede verse, escucharse y sentirse.</div>
+        <p class="muted">
+          Exploramos funciones trigonométricas, frecuencia, sonido, consonancias,
+          disonancias y figuras de Chladni.
+        </p>
+        <div class="social">@proyecto.pensandoenpi</div>
+        <div id="qr"></div>
+        <p class="small">Este QR se genera automáticamente con la dirección de la página publicada.</p>
+
+        <div class="btns">
+          <button class="primary" onclick="goTo(1)">Volver a experimentar</button>
+          <button class="secondary" onclick="stopAll()">Detener sonidos</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script>
+  let screenIndex = 0;
+  const screens = [...document.querySelectorAll(".screen")];
+  const progress = document.querySelector("#progress");
+  const statusEl = document.querySelector("#status");
+  const video = document.querySelector("#camera");
+  const scanLines = document.querySelector("#scanLines");
+
+  let audioCtx = null;
+  let currentOsc = null;
+  let currentGain = null;
+  let toneOn = false;
+  let frequency = 440;
+  let animationFrame = null;
+  let phase = 0;
+  let intervalData = null;
+
+  function makeProgress(){
+    progress.innerHTML = "";
+    screens.forEach((_,i)=>{
+      const d=document.createElement("div");
+      d.className="dot"+(i===screenIndex?" on":"");
+      progress.appendChild(d);
+    });
+  }
+
+  function goTo(i){
+    stopTone();
+    screens.forEach((s,idx)=>s.classList.toggle("active",idx===i));
+    screenIndex=i;
+    makeProgress();
+    window.scrollTo({top:0,behavior:"smooth"});
+    if(i===1) drawWave();
+    if(i===2) drawChladni(3,5);
+    if(i===3) drawInterval();
+    if(i===4) makeQR();
+  }
+  function nextScreen(){goTo(Math.min(screenIndex+1,screens.length-1))}
+  function prevScreen(){goTo(Math.max(screenIndex-1,0))}
+
+  async function startExperience(){
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});
+      video.srcObject=stream;
+      video.style.display="block";
+      scanLines.style.display="block";
+      statusEl.textContent="Cámara activa";
+    }catch(e){
+      statusEl.textContent="Modo interactivo sin cámara";
+    }
+    goTo(1);
+  }
+
+  function ensureAudio(){
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended") audioCtx.resume();
+  }
+
+  function startTone(freq=frequency){
+    ensureAudio();
+    stopTone();
+    currentOsc=audioCtx.createOscillator();
+    currentGain=audioCtx.createGain();
+    currentOsc.type="sine";
+    currentOsc.frequency.value=freq;
+    currentGain.gain.value=.0001;
+    currentOsc.connect(currentGain).connect(audioCtx.destination);
+    currentOsc.start();
+    currentGain.gain.exponentialRampToValueAtTime(.10,audioCtx.currentTime+.05);
+    toneOn=true;
+  }
+
+  function stopTone(){
+    if(currentOsc && currentGain && audioCtx){
+      try{
+        currentGain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.08);
+        currentOsc.stop(audioCtx.currentTime+.1);
+      }catch(e){}
+    }
+    currentOsc=null;currentGain=null;toneOn=false;
+  }
+
+  function toggleTone(){ toneOn ? stopTone() : startTone(); }
+
+  function setFrequency(f){
+    frequency=f;
+    document.querySelector("#freqValue").innerHTML=f+' <span class="unit">Hz</span>';
+    const labels={
+      220:"Una nota grave: La3.",
+      440:"Nota La. Frecuencia de referencia musical.",
+      660:"Una frecuencia más aguda, relacionada con una quinta justa sobre 440 Hz.",
+      880:"Una octava por encima de 440 Hz."
+    };
+    document.querySelector("#freqText").textContent=labels[f];
+    if(toneOn) startTone(f);
+  }
+
+  function drawWave(){
+    const c=document.querySelector("#waveCanvas"),ctx=c.getContext("2d");
+    cancelAnimationFrame(animationFrame);
+    function frame(){
+      const w=c.width,h=c.height;
+      ctx.clearRect(0,0,w,h);
+      ctx.strokeStyle="rgba(255,255,255,.12)";
+      ctx.lineWidth=1;
+      for(let x=0;x<w;x+=75){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
+      for(let y=0;y<h;y+=70){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+      ctx.strokeStyle="#8be9ff";ctx.lineWidth=8;ctx.beginPath();
+      const cycles=frequency/110;
+      for(let x=0;x<=w;x++){
+        const y=h/2+Math.sin((x/w)*Math.PI*2*cycles+phase)*h*.25;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+      ctx.fillStyle="#e7eef7";ctx.font="bold 26px Arial";
+      ctx.fillText("y = sen(2πft)",28,42);
+      phase+=.055;
+      animationFrame=requestAnimationFrame(frame);
+    }
+    frame();
+  }
+
+  function drawChladni(m=3,n=5){
+    const c=document.querySelector("#chladniCanvas"),ctx=c.getContext("2d");
+    const w=c.width,h=c.height,img=ctx.createImageData(w,h);
+    let p=0;
+    for(let y=0;y<h;y++){
+      const yy=(y/h)*Math.PI;
+      for(let x=0;x<w;x++){
+        const xx=(x/w)*Math.PI;
+        const z=Math.cos(m*xx)*Math.cos(n*yy)-Math.cos(n*xx)*Math.cos(m*yy);
+        const nodal=Math.exp(-Math.abs(z)*23);
+        const glow=Math.max(0,nodal);
+        img.data[p++]=Math.round(7+90*glow);
+        img.data[p++]=Math.round(20+190*glow);
+        img.data[p++]=Math.round(38+215*glow);
+        img.data[p++]=255;
+      }
+    }
+    ctx.putImageData(img,0,0);
+    document.querySelector("#modeValue").textContent=`Modo ${m} × ${n}`;
+  }
+  function setChladni(m,n){drawChladni(m,n)}
+
+  function playInterval(type){
+    ensureAudio();
+    stopAll();
+    const freqs=type==="fifth"?[440,660]:[440,440*Math.SQRT2];
+    intervalData={freqs,type};
+    const master=audioCtx.createGain();
+    master.gain.value=.07;
+    master.connect(audioCtx.destination);
+    freqs.forEach(f=>{
+      const o=audioCtx.createOscillator();
+      o.type="sine";o.frequency.value=f;o.connect(master);o.start();o.stop(audioCtx.currentTime+1.8);
+    });
+    setTimeout(()=>{try{master.disconnect()}catch(e){}},2000);
+    document.querySelector("#intervalText").textContent=
+      type==="fifth"
+      ?"Quinta justa: 440 Hz y 660 Hz. Relación 3:2."
+      :"Tritono temperado: 440 Hz y aproximadamente 622,25 Hz.";
+    drawInterval();
+  }
+
+  function drawInterval(){
+    const c=document.querySelector("#intervalCanvas"),ctx=c.getContext("2d");
+    const w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+    const freqs=intervalData?.freqs||[440,660];
+    const colors=["#8be9ff","#e7eef7"];
+    freqs.forEach((f,j)=>{
+      ctx.strokeStyle=colors[j];ctx.lineWidth=5;ctx.beginPath();
+      for(let x=0;x<=w;x++){
+        const cycles=f/110;
+        const y=h*(.33+.36*j)+Math.sin((x/w)*Math.PI*2*cycles)*55;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    });
+  }
+
+  function stopAll(){stopTone()}
+
+  let qrDone=false;
+  function makeQR(){
+    if(qrDone)return;
+    const target=document.querySelector("#qr");
+    const url=location.protocol.startsWith("http")?location.href:"https://tu-enlace-publicado.com";
+    new QRCode(target,{text:url,width:150,height:150,colorDark:"#020812",colorLight:"#ffffff"});
+    qrDone=true;
+  }
+
+  makeProgress();
+</script>
+</body>
+</html>
